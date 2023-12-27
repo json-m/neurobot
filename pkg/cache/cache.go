@@ -3,6 +3,12 @@ package cache
 import (
 	"log"
 	"os"
+	"sync"
+)
+
+var (
+	cm   = make(map[int]interface{})
+	lock = sync.RWMutex{}
 )
 
 func init() {
@@ -11,15 +17,19 @@ func init() {
 	log.Println("created cache")
 }
 
-var cm = map[int]interface{}{} // Declare your cache map to hold any type of value.
-
 // Set writes an int:key to any kind of value (interface{}) in the map
 func Set(id int, val interface{}) {
+	lock.Lock()
+	defer lock.Unlock()
+
 	cm[id] = val
 }
 
 // Get retrieves an int:key value from the map and returns it as an interface{} type.
 func Get(id int) (interface{}, bool) {
+	lock.RLock()
+	defer lock.RUnlock()
+
 	val, ok := cm[id]
 	return val, ok
 }

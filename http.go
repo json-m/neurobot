@@ -98,20 +98,20 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 				},
 				{
 					Name:   "Value/Points",
-					Value:  fmt.Sprintf("%s ISK (%dpts)", humanize.Comma(int64(km.Zkb.TotalValue)), km.Zkb.Points),
+					Value:  fmt.Sprintf("`%s ISK (%dpts)`", humanize.Comma(int64(km.Zkb.TotalValue)), km.Zkb.Points),
 					Inline: true,
 				},
 				{
 					Name: "Final Blow",
-					Value: fmt.Sprintf("[%s](https://zkillboard.com/character/%d/) in a [%s](https://zkillboard.com/ship/%d/)",
+					Value: fmt.Sprintf("[%s](https://zkillboard.com/character/%d/) ([%s](https://zkillboard.com/ship/%d/))",
 						esi.EsiCharacter(finalblow.Attackers[0].CharacterID).Name, finalblow.Attackers[0].CharacterID,
 						inventory.SdeGetItemName(finalblow.Attackers[0].ShipTypeID), finalblow.Attackers[0].ShipTypeID,
 					),
 					Inline: true,
 				},
 				{
-					Name:   "",
-					Value:  "",
+					Name:   "Affiliation",
+					Value:  fmt.Sprintf("[%s](https://zkillboard.com/corporation/%d/)", esi.EsiCorporation(finalblow.Attackers[0].CorporationID).Name, finalblow.Attackers[0].CorporationID),
 					Inline: true,
 				},
 			},
@@ -120,7 +120,12 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 		// update Victim/Alliance in embed.Fields
 		if km.Victim.AllianceID != 0 {
 			// update Victim/Alliance Value to placeholder
-			embed.Fields[5].Value = fmt.Sprintf("[[%s]](https://zkillboard.com/alliance/%d/)", esi.EsiAlliance(km.Victim.AllianceID).Ticker, km.Victim.AllianceID)
+			embed.Fields[5].Value = fmt.Sprintf("[[%s](https://zkillboard.com/alliance/%d/)]", esi.EsiAlliance(km.Victim.AllianceID).Ticker, km.Victim.AllianceID)
+		}
+
+		// update Corp/Alliance if Alliance
+		if finalblow.Attackers[0].AllianceID != 0 {
+			embed.Fields[8].Value = embed.Fields[8].Value + fmt.Sprintf(" [[%s](https://zkillboard.com/alliance/%d/)]", esi.EsiAlliance(finalblow.Attackers[0].AllianceID).Ticker, finalblow.Attackers[0].AllianceID)
 		}
 
 		_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
@@ -137,9 +142,24 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// cacheStats prints the esi.CS struct as json
+func cacheStats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(esi.CS)
+	if err != nil {
+		return
+	}
+}
+
 // httpListener starts an http listener for the local api on port 9292
 func httpListener() {
 	http.HandleFunc("/killmail", kmReceiver)
+	http.HandleFunc("/cs", cacheStats)
 	err := http.ListenAndServe(":9292", nil)
 	if err != nil {
 		go httpListener()

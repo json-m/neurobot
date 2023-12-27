@@ -35,13 +35,13 @@ type stats struct {
 	Lookups int `json:"lookups"`
 }
 
-var cs stats
+var CS stats
 
 func ss() {
 	for {
 		time.Sleep(3 * time.Minute)
 		// print hit/miss and ratio based on lookup count
-		log.Printf("CACHE: Hit: %d, Miss: %d, Ratio: %.2f\n", cs.Hit, cs.Miss, float64(cs.Hit)/float64(cs.Lookups))
+		log.Printf("CACHE: Hit: %d, Miss: %d, Ratio: %.2f\n", CS.Hit, CS.Miss, float64(CS.Hit)/float64(CS.Lookups))
 	}
 }
 
@@ -50,12 +50,12 @@ func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 	if id == 0 {
 		return &esi.GetCharactersCharacterIdOk{Name: "NPC", CorporationId: 0, AllianceId: 0}
 	}
-	cs.Lookups++
+	CS.Lookups++
 	// check if id exists in cache first, then lookup at esi
 	n, f := cache.Get(id)
 	if f == true {
 		if char, ok := n.(*esi.GetCharactersCharacterIdOk); ok {
-			cs.Hit++
+			CS.Hit++
 			log.Println("EsiCharacter (HIT):", char.Name)
 			return char
 		}
@@ -69,7 +69,7 @@ func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 	log.Println("EsiCharacter (MISS):", c.Name)
 
 	cache.Set(id, &c)
-	cs.Miss++
+	CS.Miss++
 	return &c
 }
 
@@ -78,11 +78,11 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 	if id == 0 {
 		return &esi.GetCorporationsCorporationIdOk{Name: "N/A", Ticker: "N/A", AllianceId: 0}
 	}
-	cs.Lookups++
+	CS.Lookups++
 	n, f := cache.Get(id)
 	if f == true {
 		if corp, ok := n.(*esi.GetCorporationsCorporationIdOk); ok {
-			cs.Hit++
+			CS.Hit++
 			log.Println("EsiCorporation (HIT):", corp.Name)
 			return corp
 		}
@@ -96,7 +96,7 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 	log.Println("EsiCorporation (MISS):", c.Name)
 
 	cache.Set(id, &c)
-	cs.Miss++
+	CS.Miss++
 	return &c
 }
 
@@ -105,12 +105,12 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 	if id == 0 {
 		return &esi.GetAlliancesAllianceIdOk{Name: "N/A", Ticker: "N/A"}
 	}
-	cs.Lookups++
+	CS.Lookups++
 	// check if id exists in cache first, then lookup at esi
 	n, f := cache.Get(id)
 	if f == true {
 		if alliance, ok := n.(*esi.GetAlliancesAllianceIdOk); ok {
-			cs.Hit++
+			CS.Hit++
 			log.Println("EsiAlliance (HIT):", alliance.Name)
 			return alliance
 		}
@@ -124,6 +124,6 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 	log.Println("EsiAlliance (MISS):", c.Name)
 
 	cache.Set(id, &c)
-	cs.Miss++
+	CS.Miss++
 	return &c
 }
