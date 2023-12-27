@@ -48,14 +48,15 @@ func ss() {
 // EsiCharacter searches ESI for char ID, gets char struct
 func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 	if id == 0 {
-		return &esi.GetCharactersCharacterIdOk{Name: "N/A", CorporationId: 0, AllianceId: 0}
+		return &esi.GetCharactersCharacterIdOk{Name: "NPC", CorporationId: 0, AllianceId: 0}
 	}
 	cs.Lookups++
 	// check if id exists in cache first, then lookup at esi
 	n, f := cache.Get(id)
-	if f != true {
+	if f == true {
 		if char, ok := n.(*esi.GetCharactersCharacterIdOk); ok {
 			cs.Hit++
+			log.Println("EsiCharacter (HIT):", char.Name)
 			return char
 		}
 	}
@@ -65,9 +66,9 @@ func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 		log.Println("couldn't search character")
 		return nil
 	}
-	log.Println("esiCharacterName:", c.Name)
+	log.Println("EsiCharacter (MISS):", c.Name)
 
-	cache.Set(id, c)
+	cache.Set(id, &c)
 	cs.Miss++
 	return &c
 }
@@ -79,9 +80,10 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 	}
 	cs.Lookups++
 	n, f := cache.Get(id)
-	if f != true {
+	if f == true {
 		if corp, ok := n.(*esi.GetCorporationsCorporationIdOk); ok {
 			cs.Hit++
+			log.Println("EsiCorporation (HIT):", corp.Name)
 			return corp
 		}
 	}
@@ -91,9 +93,9 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 		log.Println("couldn't search corporation")
 		return nil
 	}
-	log.Println("esiCorporationName:", c.Name)
+	log.Println("EsiCorporation (MISS):", c.Name)
 
-	cache.Set(id, c)
+	cache.Set(id, &c)
 	cs.Miss++
 	return &c
 }
@@ -106,9 +108,10 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 	cs.Lookups++
 	// check if id exists in cache first, then lookup at esi
 	n, f := cache.Get(id)
-	if f != true {
+	if f == true {
 		if alliance, ok := n.(*esi.GetAlliancesAllianceIdOk); ok {
 			cs.Hit++
+			log.Println("EsiAlliance (HIT):", alliance.Name)
 			return alliance
 		}
 	}
@@ -118,9 +121,9 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 		log.Println("couldn't search alliance")
 		return nil
 	}
-	log.Println("esiAllianceName:", c.Name)
+	log.Println("EsiAlliance (MISS):", c.Name)
 
-	cache.Set(id, c.Name)
+	cache.Set(id, &c)
 	cs.Miss++
 	return &c
 }

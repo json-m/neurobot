@@ -11,6 +11,7 @@ import (
 	"neurobot/pkg/esi"
 	"neurobot/pkg/inventory"
 	"neurobot/pkg/zkb"
+	"strings"
 	"time"
 )
 
@@ -46,6 +47,14 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// remove system name from left of location name
+		var loc string
+		loc = cartographer.EveLocation(km).Name
+		loc = strings.TrimSpace(strings.TrimLeft(loc, cartographer.EveNavigation(0, km.SolarSystemID).Name))
+		if loc != "" {
+			loc = fmt.Sprintf("[%s](https://zkillboard.com/location/%d/)", loc, cartographer.EveLocation(km).ID)
+		}
+
 		// create a discord embed
 		embed := discordgo.MessageEmbed{
 			Thumbnail: &discordgo.MessageEmbedThumbnail{
@@ -53,18 +62,18 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 				Width:  64,
 				Height: 64,
 			},
-			Title: fmt.Sprintf("Killmail: %s (%s)\n%s", esi.EsiCharacter(km.Victim.CharacterID).Name, inventory.SdeGetItemName(km.Victim.ShipTypeID), km.Zkb.URL),
+			Title: fmt.Sprintf("Kill: %s (%s)\n%s", esi.EsiCharacter(km.Victim.CharacterID).Name, inventory.SdeGetItemName(km.Victim.ShipTypeID), km.Zkb.URL),
 			//Description: fmt.Sprintf("[link to killmail](%s)", km.Zkb.URL),
 			Color: 0xFF0000,
 			Fields: []*discordgo.MessageEmbedField{
 				{
-					Name:   "Killmail Time",
+					Name:   "Time",
 					Value:  fmt.Sprintf("%s\n<t:%d:R>", km.KillmailTime.Format(time.RFC822), km.KillmailTime.Unix()),
 					Inline: true,
 				},
 				{
-					Name:   "System",
-					Value:  fmt.Sprintf("[%s](https://zkillboard.com/system/%d/)", cartographer.EveNavigation(0, km.SolarSystemID).Name, km.SolarSystemID),
+					Name:   "Location",
+					Value:  fmt.Sprintf("[%s](https://zkillboard.com/system/%d/) %s", cartographer.EveNavigation(0, km.SolarSystemID).Name, km.SolarSystemID, loc),
 					Inline: true,
 				},
 				{
@@ -88,7 +97,7 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 					Inline: true,
 				},
 				{
-					Name:   "Value",
+					Name:   "Value/Points",
 					Value:  fmt.Sprintf("%s ISK (%dpts)", humanize.Comma(int64(km.Zkb.TotalValue)), km.Zkb.Points),
 					Inline: true,
 				},
