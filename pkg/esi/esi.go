@@ -7,10 +7,14 @@ import (
 	"log"
 	"net/http"
 	"neurobot/pkg/etagtripper"
+	"neurobot/pkg/ucache"
 	"time"
 )
 
 func init() {
+	log.Println("initializing ucache")
+	uc = ucache.Cache{Expiry: time.Hour * 672} // 1 month
+
 	log.Println("initializing esi client")
 	// initalize a goesi client
 	client := &http.Client{
@@ -24,6 +28,7 @@ func init() {
 	esiClient = goesi.NewAPIClient(client, "neurotoxin discord bot (ign: Maxx Ibanez / jason@xax.li")
 }
 
+var uc ucache.Cache
 var esiClient *goesi.APIClient
 
 // EsiCharacterName searches ESI for char ID, gets char name

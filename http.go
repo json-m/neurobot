@@ -43,18 +43,18 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 			Color:       0xFF0000,
 			Fields: []*discordgo.MessageEmbedField{
 				{
-					Name:   "Killmail ID",
-					Value:  strconv.Itoa(km.KillmailID),
-					Inline: true,
-				},
-				{
 					Name:   "Killmail Time",
 					Value:  km.KillmailTime.Format(time.RFC3339),
 					Inline: true,
 				},
 				{
-					Name:   "Solar System Name",
+					Name:   "System",
 					Value:  cartographer.EveNavigation(0, km.SolarSystemID).Name,
+					Inline: true,
+				},
+				{
+					Name:   "Ship",
+					Value:  strconv.Itoa(km.Victim.ShipTypeID),
 					Inline: true,
 				},
 				{

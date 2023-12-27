@@ -74,6 +74,7 @@ func init() {
 	var err error
 
 	// Decompress mapSolarSystems
+	log.Println("decompressing mapSolarSystems.json.xz")
 	r, err := xz.NewReader(bytes.NewReader(compressedMapSolarSystems))
 	if err != nil {
 		log.Fatalf("Failed to create xz reader: %v", err)
@@ -92,6 +93,7 @@ func init() {
 	}
 
 	// Decompress mapSolarSystemJumps
+	log.Println("decompressing mapSolarSystemJumps.json.xz")
 	r, err = xz.NewReader(bytes.NewReader(compressedMapSolarSystemJumps))
 	if err != nil {
 		log.Fatalf("Failed to create xz reader: %v", err)

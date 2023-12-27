@@ -5,14 +5,12 @@ go 1.20
 require (
 	github.com/antihax/goesi v0.0.0-20231202031403-498c84423fe8
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/bxcodec/httpcache v1.0.0-beta.3
 	github.com/gonum/graph v0.0.0-20190426092945-678096d81a4b
 	github.com/twpayne/go-geom v1.5.3
 	github.com/ulikunitz/xz v0.5.11
 )
 
 require (
-	github.com/bxcodec/gotcha v1.0.0-beta.8 // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect

@@ -40,6 +40,7 @@ var sdeLocations SdeLocations
 func init() {
 	var err error
 	// Decompress mapDenormalize
+	log.Println("decompressing mapDenormalize.json.xz")
 	r, err := xz.NewReader(bytes.NewReader(compressedMapDenormalize))
 	if err != nil {
 		log.Fatalf("Failed to create xz reader: %v", err)
