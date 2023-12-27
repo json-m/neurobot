@@ -123,7 +123,7 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				// the message format is:
 				// timer ddhhmm pin group message
-				// ddhhmm is arg 2
+				// ddhhmm is arg 1
 
 				// set notify and msg args
 				notify := args[3]

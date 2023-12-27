@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/bwmarrin/discordgo"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -72,13 +74,54 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: Handle the received Killmail
-	kmType := r.URL.Query()["type"][0] // for ie. POST /killmail?type=whoops
+	// for ie. POST /killmail?type=whoops
+	kmType := r.URL.Query()["type"][0]
+	log.Println("got km POST data:", kmType)
+
+	if kmType == "testing" {
+		channel := "1189353671213981798"
+
+		// create a discord embed
+		embed := discordgo.MessageEmbed{
+			Title:       "Killmail",
+			Description: "New killmail received",
+			Color:       0xFF0000,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "Killmail ID",
+					Value:  strconv.Itoa(km.KillmailID),
+					Inline: true,
+				},
+				{
+					Name:   "Killmail Time",
+					Value:  km.KillmailTime.Format(time.RFC3339),
+					Inline: true,
+				},
+				{
+					Name:   "Solar System ID",
+					Value:  strconv.Itoa(km.SolarSystemID),
+					Inline: true,
+				},
+				{
+					Name:   "Victim",
+					Value:  strconv.Itoa(km.Victim.CharacterID),
+					Inline: true,
+				},
+			},
+		}
+
+		_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
+		if err != nil {
+			http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if kmType == "whoops" {
+
+	}
 
 	w.WriteHeader(http.StatusOK)
-
-	fmt.Println(r.URL.Query(), kmType)
-
 }
 
 // httpListener starts an http listener for the local api on port 9292
