@@ -18,9 +18,9 @@ type invItems []struct {
 	TypeName      string      `json:"typeName"`
 	Description   string      `json:"description"`
 	Mass          float64     `json:"mass"`
-	Volume        int         `json:"volume"`
-	Capacity      int         `json:"capacity"`
-	PortionSize   int         `json:"portionSize"`
+	Volume        float64     `json:"volume"`
+	Capacity      float64     `json:"capacity"`
+	PortionSize   float64     `json:"portionSize"`
 	RaceID        interface{} `json:"raceID"`
 	BasePrice     interface{} `json:"basePrice"`
 	Published     int         `json:"published"`
