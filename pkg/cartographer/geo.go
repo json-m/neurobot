@@ -13,6 +13,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"runtime/debug"
 )
 
 // SdeSolarSystems is a slice of structs from the json file
@@ -113,6 +114,14 @@ func init() {
 
 	// after loading data, initialize graph for pathfinding
 	graphMap = createGraphMap()
+
+	// free memory
+	log.Println("freeing memory")
+	compressedMapSolarSystems = nil
+	compressedMapSolarSystemJumps = nil
+	mapSolarSystems = nil
+	mapSolarSystemJumps = nil
+	debug.FreeOSMemory()
 }
 
 type System struct {

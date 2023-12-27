@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"neurobot/pkg/cartographer"
 	"neurobot/pkg/esi"
+	"neurobot/pkg/inventory"
 	"neurobot/pkg/zkb"
-	"strconv"
 	"time"
 )
 
@@ -54,7 +54,7 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 				},
 				{
 					Name:   "Ship",
-					Value:  strconv.Itoa(km.Victim.ShipTypeID),
+					Value:  inventory.SdeGetItemName(km.Victim.ShipTypeID),
 					Inline: true,
 				},
 				{

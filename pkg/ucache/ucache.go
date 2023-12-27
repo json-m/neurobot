@@ -12,7 +12,6 @@ import (
 var c Cache
 
 func init() {
-	log.Println("(ucache) init")
 	go c.startExpiryThread()
 }
 
