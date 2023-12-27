@@ -57,8 +57,9 @@ func timerMonitor() {
 					}
 				}
 
-				// 48 hours after a timer has expired, remove it from the slice and unpin it from the channel
-				if time.Until(t.Expires) >= 48*time.Hour {
+				// 48 hours after t.Expiry, remove it from the slice and unpin it from the channel
+				if time.Since(t.Expires) > 48*time.Hour {
+					log.Println("removing a timer because of 48hr expired removal")
 					Config.Timers = append(Config.Timers[:i], Config.Timers[i+1:]...)
 					i--
 					err := writeConfig()
@@ -87,7 +88,7 @@ func sendTimerMessage(timer Timer) error {
 	embed := &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       fmt.Sprintf("%s :: 30 minute warning!", timer.Message),
-		Description: fmt.Sprintf("%s\n%s\n<t:%s:R>", timer.Notify, timer.Message, newUnixTime),
+		Description: fmt.Sprintf("%s <t:%s:R>", timer.Message, newUnixTime),
 		Color:       0xffa500, // Orange color
 	}
 
