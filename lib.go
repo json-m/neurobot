@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -50,15 +51,21 @@ func timerMonitor() {
 						log.Println("Error sending timer message:", err)
 					}
 					Config.Timers[i].HasNotified = true
-					_ = writeConfig()
+					err = writeConfig()
+					if err != nil {
+						_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+err.Error())
+					}
 				}
 
 				// 48 hours after a timer has expired, remove it from the slice and unpin it from the channel
 				if time.Until(t.Expires) >= 48*time.Hour {
 					Config.Timers = append(Config.Timers[:i], Config.Timers[i+1:]...)
 					i--
-					_ = writeConfig()
-					err := Config.session.ChannelMessageUnpin(t.Channel, t.MessageID)
+					err := writeConfig()
+					if err != nil {
+						_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+err.Error())
+					}
+					err = Config.session.ChannelMessageUnpin(t.Channel, t.MessageID)
 					if err != nil {
 						log.Println("Error unpinning message:", err)
 					}
@@ -73,6 +80,7 @@ func timerMonitor() {
 
 }
 
+// sendTimerMessage
 func sendTimerMessage(timer Timer) error {
 	// create an embed
 	newUnixTime := strconv.FormatInt(timer.Expires.Unix(), 10)
@@ -83,6 +91,7 @@ func sendTimerMessage(timer Timer) error {
 		Color:       0xffa500, // Orange color
 	}
 
+	// inject embed into a message that allows mentions for timer.Notify
 	msg := &discordgo.MessageSend{
 		Content: fmt.Sprintf(timer.Notify),
 		Embed:   embed,
@@ -94,6 +103,7 @@ func sendTimerMessage(timer Timer) error {
 		},
 	}
 
+	// send
 	_, err := Config.session.ChannelMessageSendComplex(timer.Channel, msg)
 	if err != nil {
 		return err
@@ -102,6 +112,7 @@ func sendTimerMessage(timer Timer) error {
 	return nil
 }
 
+// blocked checks if the message source channel is in a blocklist, used for disallowing commands in public channels
 func blocked(id string) bool {
 	// if m.ChannelID is in blockedChannels, just return
 	for _, channel := range blockedChannels {
@@ -110,4 +121,9 @@ func blocked(id string) bool {
 		}
 	}
 	return false
+}
+
+// stripCommand cleans up the command
+func stripCommand(arg string) string {
+	return strings.TrimSpace(strings.TrimLeft(arg, "<@1189348098695237662>"))
 }

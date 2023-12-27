@@ -21,6 +21,7 @@ func init() {
 	}
 }
 
+// Timer is an individual timer
 type Timer struct {
 	Message     string    `json:"message"`
 	MessageID   string    `json:"messageID"`
@@ -53,8 +54,18 @@ func main() {
 		return
 	}
 
-	// start background timer handler
+	// start background tasks
 	go timerMonitor()
+	go httpListener()
+	go func() { // periodic config writer
+		for {
+			time.Sleep(2 * time.Minute)
+			bgerr := writeConfig()
+			if bgerr != nil {
+				_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+bgerr.Error())
+			}
+		}
+	}()
 
 	// Wait here until CTRL-C or other term signal is received.
 	log.Println("Bot is now running.  Press CTRL-C to exit.")
@@ -66,6 +77,7 @@ func main() {
 	Config.session.Close()
 }
 
+// timerHandler handles timer messages for calculating or adding a timer to track
 func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -79,8 +91,8 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.Contains(m.Content, "<@1189348098695237662> timer ") {
 		log.Println("in cmd:", m.Content)
 
-		args := strings.Split(m.Content, " ")
-		dd, hh, mm := processTimerInput(args[2])
+		args := strings.Split(stripCommand(m.Content), " ")
+		dd, hh, mm := processTimerInput(args[1])
 		now := time.Now().UTC()
 
 		// now nudge the now time by the time in the command, and return the new unixtime as string
@@ -114,8 +126,8 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				// ddhhmm is arg 2
 
 				// set notify and msg args
-				notify := args[4]
-				message := strings.Join(args[5:], " ")
+				notify := args[3]
+				message := strings.Join(args[4:], " ")
 				timer := Timer{
 					Message:   message,
 					MessageID: m.ID,
@@ -127,6 +139,7 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				embed.Color = 0x00ff00
 				embed.Title = message
 
+				// send pin embed and get response for tracking
 				response, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 				if err != nil {
 					log.Println("Error sending message:", err)
@@ -140,15 +153,19 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					return
 				}
 
+				// append to timers
 				Config.Timers = append(Config.Timers, timer)
 				log.Printf("%+v", timer)
 
+				// write config
 				err = writeConfig()
 				if err != nil {
 					log.Println("writing config during pin:", err)
 					_, _ = s.ChannelMessageSend(m.ChannelID, err.Error())
 					return
 				}
+
+				// react to msg
 				_ = s.MessageReactionAdd(m.ChannelID, m.ID, "⏰")
 				_ = s.MessageReactionAdd(m.ChannelID, m.ID, "👍")
 
@@ -156,6 +173,7 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 
+		// send normal timer calc message
 		_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		if err != nil {
 			log.Println("Error sending message:", err)
@@ -165,6 +183,7 @@ func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 }
 
+// showTimersHandler prints a list of timers that are currently being tracked
 func showTimersHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -179,19 +198,23 @@ func showTimersHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.Contains(m.Content, "<@1189348098695237662> timers") {
 		log.Println("in cmd:", m.Content)
 
+		// if there are any timers
 		if len(Config.Timers) > 0 {
+			// generate the string for message content
 			timers := "\n"
 			for _, timer := range Config.Timers {
 				tttt := strconv.FormatInt(timer.Expires.Unix(), 10)
 				timers += fmt.Sprintf("* %s :: <t:%s:R>\n", timer.Message, tttt)
 			}
+
+			// send
 			_, err := s.ChannelMessageSend(m.ChannelID, timers)
 			if err != nil {
 				log.Println(err)
 				return
 			}
 
-		} else {
+		} else { // otherwise if no timers
 			_, err := s.ChannelMessageSend(m.ChannelID, "no timers running")
 			if err != nil {
 				log.Println(err)
