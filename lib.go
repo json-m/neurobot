@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -94,4 +95,17 @@ func blocked(id string) bool {
 // stripCommand cleans up the command
 func stripCommand(arg string) string {
 	return strings.TrimSpace(strings.TrimLeft(arg, "<@1189348098695237662>"))
+}
+
+func MemUsage() string {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	return fmt.Sprintf("Alloc = %v MiB", bToMb(m.Alloc)) +
+		fmt.Sprintf("\nTotalAlloc = %v MiB", bToMb(m.TotalAlloc)) +
+		fmt.Sprintf("\nSys = %v MiB", bToMb(m.Sys)) +
+		fmt.Sprintf("\nNumGC = %v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

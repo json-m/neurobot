@@ -39,7 +39,7 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if kmType == "testing" {
-		//channel := "1189353671213981798"
+		channel := "1189353671213981798"
 
 		// get final blow on km
 		var finalblow zkb.Killmail
@@ -112,7 +112,7 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 					),
 					Inline: true,
 				},
-				{
+				{ //todo: handle faction somehow too
 					Name:   "Affiliation",
 					Value:  fmt.Sprintf("[%s](https://zkillboard.com/corporation/%d/)", esi.EsiCorporation(finalblow.Attackers[0].CorporationID).Name, finalblow.Attackers[0].CorporationID),
 					Inline: true,
@@ -131,11 +131,11 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 			embed.Fields[8].Value = embed.Fields[8].Value + fmt.Sprintf(" [[%s](https://zkillboard.com/alliance/%d/)]", esi.EsiAlliance(finalblow.Attackers[0].AllianceID).Ticker, finalblow.Attackers[0].AllianceID)
 		}
 
-		//_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
-		//if err != nil {
-		//	http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
-		//	return
-		//}
+		_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
+		if err != nil {
+			http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if kmType == "whoops" {

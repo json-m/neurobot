@@ -41,7 +41,7 @@ func ss() {
 	for {
 		time.Sleep(3 * time.Minute)
 		// print hit/miss and ratio based on lookup count
-		log.Printf("CACHE: Hit: %d, Miss: %d, Ratio: %.2f\n", CS.Hit, CS.Miss, float64(CS.Hit)/float64(CS.Lookups))
+		log.Printf("CACHE: Hit: %d, Miss: %d, Ratio: %.2f Size: %d objects\n", CS.Hit, CS.Miss, float64(CS.Hit)/float64(CS.Lookups), cache.Len())
 	}
 }
 

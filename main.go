@@ -32,10 +32,12 @@ func main() {
 
 	// command handlers
 	Config.session.AddHandler(cmdHandler)
+
+	// todo: move these under cmdHandler
 	Config.session.AddHandler(timerHandler)
 	Config.session.AddHandler(deleteTimerHandler)
 
-	// Open a websocket connection to Discord and begin listening.
+	// open ws connection
 	err = Config.session.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
@@ -45,22 +47,11 @@ func main() {
 	// start background tasks
 	go timerMonitor()
 	go httpListener()
-	//go func() { // periodic config writer
-	//	for {
-	//		time.Sleep(2 * time.Minute)
-	//		bgerr := writeConfig()
-	//		if bgerr != nil {
-	//			_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+bgerr.Error())
-	//		}
-	//	}
-	//}()
 
-	// Wait here until CTRL-C or other term signal is received.
+	// wait for ^C
 	log.Println("startup done, bot should be up :: ^C to quit")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
-
-	// Cleanly close down the Discord session.
 	Config.session.Close()
 }

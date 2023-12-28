@@ -28,7 +28,6 @@ func cmdHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	switch args[0] {
 	case "timer":
 		log.Println("would have invoked timer handler from cmdHandler")
-		//timerHandler(s, m)
 	case "timers":
 		showTimersHandler(s, m)
 	case "stats":

@@ -33,3 +33,8 @@ func Get(id int) (interface{}, bool) {
 	val, ok := cm[id]
 	return val, ok
 }
+
+// Len prints len of cm as int
+func Len() int {
+	return len(cm)
+}
