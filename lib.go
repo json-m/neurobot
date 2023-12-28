@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"log"
 	"regexp"
 	"strconv"
@@ -46,7 +45,7 @@ func timerMonitor() {
 				// notify 30minutes before a timer expires, then update HasNotified for that timer so that it doesn't fire again
 				if time.Until(t.Expires) <= 30*time.Minute && !t.HasNotified {
 					log.Println("sending timer message:", t)
-					err := sendTimerMessage(t)
+					err := sendTimerWarning(t)
 					if err != nil {
 						log.Println("Error sending timer message:", err)
 					}
@@ -79,38 +78,6 @@ func timerMonitor() {
 		time.Sleep(time.Minute)
 	}
 
-}
-
-// sendTimerMessage
-func sendTimerMessage(timer Timer) error {
-	// create an embed
-	newUnixTime := strconv.FormatInt(timer.Expires.Unix(), 10)
-	embed := &discordgo.MessageEmbed{
-		Type:        "rich",
-		Title:       fmt.Sprintf("%s :: 30 minute warning!", timer.Message),
-		Description: fmt.Sprintf("%s <t:%s:R>", timer.Message, newUnixTime),
-		Color:       0xffa500, // Orange color
-	}
-
-	// inject embed into a message that allows mentions for timer.Notify
-	msg := &discordgo.MessageSend{
-		Content: fmt.Sprintf(timer.Notify),
-		Embed:   embed,
-		AllowedMentions: &discordgo.MessageAllowedMentions{
-			Parse: []discordgo.AllowedMentionType{
-				discordgo.AllowedMentionTypeRoles,
-				discordgo.AllowedMentionTypeUsers,
-			},
-		},
-	}
-
-	// send
-	_, err := Config.session.ChannelMessageSendComplex(timer.Channel, msg)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // blocked checks if the message source channel is in a blocklist, used for disallowing commands in public channels

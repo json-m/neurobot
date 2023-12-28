@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
-	"log"
 	"net/http"
 	"neurobot/pkg/cartographer"
 	"neurobot/pkg/esi"
@@ -33,10 +32,14 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 
 	// for ie. POST /killmail?type=whoops
 	kmType := r.URL.Query()["type"][0]
-	log.Println("got km POST data:", kmType)
+	//log.Println("got km POST data:", kmType)
+
+	if km.Victim.ShipTypeID != 670 {
+		return
+	}
 
 	if kmType == "testing" {
-		channel := "1189353671213981798"
+		//channel := "1189353671213981798"
 
 		// get final blow on km
 		var finalblow zkb.Killmail
@@ -128,11 +131,11 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 			embed.Fields[8].Value = embed.Fields[8].Value + fmt.Sprintf(" [[%s](https://zkillboard.com/alliance/%d/)]", esi.EsiAlliance(finalblow.Attackers[0].AllianceID).Ticker, finalblow.Attackers[0].AllianceID)
 		}
 
-		_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
-		if err != nil {
-			http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
-			return
-		}
+		//_, err = Config.session.ChannelMessageSendEmbed(channel, &embed)
+		//if err != nil {
+		//	http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
+		//	return
+		//}
 	}
 
 	if kmType == "whoops" {

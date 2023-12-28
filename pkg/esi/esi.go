@@ -24,7 +24,7 @@ func init() {
 	//}
 	esiClient = goesi.NewAPIClient(client, "neurotoxin discord bot (ign: Maxx Ibanez / jason@xax.li")
 
-	go ss()
+	//go ss()
 }
 
 var esiClient *goesi.APIClient
@@ -56,7 +56,7 @@ func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 	if f == true {
 		if char, ok := n.(*esi.GetCharactersCharacterIdOk); ok {
 			CS.Hit++
-			log.Println("EsiCharacter (HIT):", char.Name)
+			//log.Println("EsiCharacter (HIT):", char.Name)
 			return char
 		}
 	}
@@ -64,9 +64,9 @@ func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {
 	c, _, err := esiClient.ESI.CharacterApi.GetCharactersCharacterId(context.Background(), int32(id), nil)
 	if err != nil {
 		log.Println("couldn't search character")
-		return nil
+		return &esi.GetCharactersCharacterIdOk{Name: "NPC", CorporationId: 0, AllianceId: 0}
 	}
-	log.Println("EsiCharacter (MISS):", c.Name)
+	//log.Println("EsiCharacter (MISS):", c.Name)
 
 	cache.Set(id, &c)
 	CS.Miss++
@@ -83,7 +83,7 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 	if f == true {
 		if corp, ok := n.(*esi.GetCorporationsCorporationIdOk); ok {
 			CS.Hit++
-			log.Println("EsiCorporation (HIT):", corp.Name)
+			//log.Println("EsiCorporation (HIT):", corp.Name)
 			return corp
 		}
 	}
@@ -91,9 +91,9 @@ func EsiCorporation(id int) *esi.GetCorporationsCorporationIdOk {
 	c, _, err := esiClient.ESI.CorporationApi.GetCorporationsCorporationId(context.Background(), int32(id), nil)
 	if err != nil {
 		log.Println("couldn't search corporation")
-		return nil
+		return &esi.GetCorporationsCorporationIdOk{Name: "N/A", Ticker: "N/A", AllianceId: 0}
 	}
-	log.Println("EsiCorporation (MISS):", c.Name)
+	//log.Println("EsiCorporation (MISS):", c.Name)
 
 	cache.Set(id, &c)
 	CS.Miss++
@@ -111,7 +111,7 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 	if f == true {
 		if alliance, ok := n.(*esi.GetAlliancesAllianceIdOk); ok {
 			CS.Hit++
-			log.Println("EsiAlliance (HIT):", alliance.Name)
+			//log.Println("EsiAlliance (HIT):", alliance.Name)
 			return alliance
 		}
 	}
@@ -119,9 +119,9 @@ func EsiAlliance(id int) *esi.GetAlliancesAllianceIdOk {
 	c, _, err := esiClient.ESI.AllianceApi.GetAlliancesAllianceId(context.Background(), int32(id), &esi.GetAlliancesAllianceIdOpts{})
 	if err != nil {
 		log.Println("couldn't search alliance")
-		return nil
+		return &esi.GetAlliancesAllianceIdOk{Name: "N/A", Ticker: "N/A"}
 	}
-	log.Println("EsiAlliance (MISS):", c.Name)
+	//log.Println("EsiAlliance (MISS):", c.Name)
 
 	cache.Set(id, &c)
 	CS.Miss++
