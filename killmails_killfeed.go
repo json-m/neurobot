@@ -14,9 +14,22 @@ import (
 	"time"
 )
 
+// facts for kms
+var facts = []string{
+	"Neurotoxin Control was founded on July 21st 2019",
+	"Neurotoxin have lost `4` Alliance Tournament ships",
+	"Neurotoxin won `The Great War of WANGS` in Tama",
+	"Neurotoxin provides femboy leasing at all major EVE Online events",
+	"In 2020 <@228304135412383746> was appointed head diplomat of Neurotoxin Control?", // @'s liam
+	"Since 2019 Neurotoxin has yet to get along with a single neighbor?",
+	"Neurotoxin Control is a proud Triple Platinum sponsor of [Femboy Hooters](<https://zkillboard.com/corporation/98647355/>)",
+	"The last Neurotoxin AT loss was <t:1680339240:R>",
+	"In Neurotoxin, AWOXing is a rite of passage",
+}
+
 func killmailsKillfeed(km zkb.Killmail) error {
 	// where to send
-	channel := "1189353671213981798"
+	channel := "658565710121009172"
 	e := generateKillmailKillfeed(km)
 
 	// disallow pings from facts
@@ -35,20 +48,7 @@ func killmailsKillfeed(km zkb.Killmail) error {
 	return nil
 }
 
-var facts = []string{
-	"Neurotoxin Control was founded on July 21st 2019",
-	"Neurotoxin have lost `4` Alliance Tournament ships",
-	"Neurotoxin won `The Great War of WANGS` in Tama",
-	"Neurotoxin provides femboy leasing at all major EVE Online events",
-	"In 2020 <@228304135412383746> was appointed head diplomat of Neurotoxin Control?", // @'s liam
-	"Since 2019 Neurotoxin has yet to get along with a single neighbor?",
-	"Neurotoxin Control is a proud Triple Platinum sponsor of [Femboy Hooters](<https://zkillboard.com/corporation/98647355/>)",
-	"The last Neurotoxin AT loss was <t:1680339240:R>",
-	"In Neurotoxin, AWOXing is a rite of passage",
-}
-
 func generateKillmailKillfeed(km zkb.Killmail) discordgo.MessageEmbed {
-
 	// get final blow on km
 	var finalblow zkb.Killmail
 	for _, a := range km.Attackers {
@@ -80,8 +80,9 @@ func generateKillmailKillfeed(km zkb.Killmail) discordgo.MessageEmbed {
 
 	// select random string in facts
 	randomFact := facts[rand.Intn(len(facts))]
-	descStr := fmt.Sprintf("### Did you know?\n%s", randomFact)
+	descStr := fmt.Sprintf("#### Did you know?\n%s", randomFact)
 
+	// create embed
 	embed := discordgo.MessageEmbed{
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL:    fmt.Sprintf("https://images.evetech.net/types/%d/render", km.Victim.ShipTypeID),
