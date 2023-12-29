@@ -80,7 +80,7 @@ func generateKillmailKillfeed(km zkb.Killmail) discordgo.MessageEmbed {
 
 	// select random string in facts
 	randomFact := facts[rand.Intn(len(facts))]
-	descStr := fmt.Sprintf("#### Did you know?\n%s", randomFact)
+	descStr := fmt.Sprintf("Did you know?\n* *%s*", randomFact)
 
 	// create embed
 	embed := discordgo.MessageEmbed{
