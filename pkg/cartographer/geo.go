@@ -234,7 +234,7 @@ func EveNavigation(src, dst int) System {
 	if src == 30100000 || dst == 30100000 {
 		return System{JumpDrive: Coordinates{
 			CoordA: geom.Coord{0, 0, 0},
-			CoordB: geom.Coord{999999999999999999999999, 999999999999999999999999, 999999999999999999999999},
+			CoordB: geom.Coord{1.7e308, 1.7e308, 1.7e308},
 		}}
 	}
 
