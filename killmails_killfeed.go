@@ -20,21 +20,29 @@ var facts = []string{
 	"Neurotoxin have lost `4` Alliance Tournament ships",
 	"Neurotoxin won `The Great War of WANGS` in Tama",
 	"Neurotoxin provides femboy leasing at all major EVE Online events",
-	"In 2020 <@228304135412383746> was appointed head diplomat of Neurotoxin Control", // @'s liam
+	"In 2020 <@228304135412383746> was appointed head diplomat of Neurotoxin Control", // @ liam
 	"Since 2019 Neurotoxin has yet to get along with a single neighbor",
 	"Neurotoxin Control is a proud Triple Platinum sponsor of [Femboy Hooters](<https://zkillboard.com/corporation/98647355/>)",
-	"The last Neurotoxin AT loss was <t:1680339240:R>",
+	"The last Neurotoxin tournament ship loss was <t:1680339240:R>",
 	"In Neurotoxin, AWOXing is a rite of passage",
 	"The first kill with and loss of both a Phoenix Navy Issue and Geri was achieved by the same Neurotoxin member (c3po)",
 	"Neurotoxin Control was originally founded as a wormhole corp",
 	"Neurotoxin Control is a founding member of the Panpher Sanctuary located on Enaluri II",
 	"Itaer's signature catchphrase is `sorry, I wasn't listening`",
 	"Neurotoxin Control has the blessings of the Italian Mafia",
+	"[Riklous](<https://zkillboard.com/character/1300550029/>) is Neurotoxin Controls' Lead Permit Officer",
+	"Neurotoxin Control is a premier permit provider of New Eden. However, leaks from inside the corporation reveal an unknown backorder date",
+	"<:daddies_drunk:1098713048279175188>",
+	"<@253505552326459392> is the [6th top Thrasher pilot](https://zkillboard.com/ship/16242/topalltime/)", // @ quake
+	"Neurotoxin Control has a strict 'no masturbation in fleet' policy",
+	"<@237624706079916035> consumes enough energy drinks in a day to kill a small elephant", // @ lynx
+	"Neurotoxin Control is full spectrum",
+	"Well, did you?",
 }
 
 func killmailsKillfeed(km zkb.Killmail) error {
 	// where to send
-	channel := "658565710121009172"
+	channel := "658565710121009172" //#killfeed
 	e := generateKillmailKillfeed(km)
 
 	// disallow pings from facts

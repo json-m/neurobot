@@ -15,7 +15,7 @@ import (
 
 func killmailsWhoops(km zkb.Killmail) error {
 	// where to send
-	channel := "985308569077440584"
+	channel := "985308569077440584" // #whoops
 	e := generateKillmailWhoops(km)
 
 	_, err := Config.session.ChannelMessageSendEmbed(channel, &e)
