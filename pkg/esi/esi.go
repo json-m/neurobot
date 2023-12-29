@@ -13,18 +13,11 @@ import (
 
 func init() {
 	log.Println("initializing esi")
-	// initalize a goesi client
 	client := &http.Client{
 		Timeout:   5 * time.Second,
 		Transport: &etagtripper.ETagTransport{Next: &http.Transport{}},
 	}
-	//_, err := httpcache.NewWithInmemoryCache(client, true, time.Hour*168)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 	esiClient = goesi.NewAPIClient(client, "neurotoxin discord bot (ign: Maxx Ibanez / jason@xax.li")
-
-	//go ss()
 }
 
 var esiClient *goesi.APIClient
@@ -36,14 +29,6 @@ type stats struct {
 }
 
 var CS stats
-
-func ss() {
-	for {
-		time.Sleep(3 * time.Minute)
-		// print hit/miss and ratio based on lookup count
-		log.Printf("CACHE: Hit: %d, Miss: %d, Ratio: %.2f Size: %d objects\n", CS.Hit, CS.Miss, float64(CS.Hit)/float64(CS.Lookups), cache.Len())
-	}
-}
 
 // EsiCharacter searches ESI for char ID, gets char struct
 func EsiCharacter(id int) *esi.GetCharactersCharacterIdOk {

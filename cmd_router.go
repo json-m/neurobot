@@ -23,7 +23,7 @@ func cmdHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// switch statement for the following commands: timer, timers, stats
+	// switch on each command
 	args := strings.Split(stripCommand(m.Content), " ")
 	switch args[0] {
 	case "timer":

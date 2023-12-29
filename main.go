@@ -33,9 +33,11 @@ func main() {
 	// command handlers
 	Config.session.AddHandler(cmdHandler)
 
+	// reaction handlers
+	Config.session.AddHandler(deleteTimerHandler)
+
 	// todo: move these under cmdHandler
 	Config.session.AddHandler(timerHandler)
-	Config.session.AddHandler(deleteTimerHandler)
 
 	// open ws connection
 	err = Config.session.Open()

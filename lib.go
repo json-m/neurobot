@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // find does a regex search and converts the result to an integer
@@ -36,49 +34,6 @@ func processTimerInput(input string) (int, int, int) {
 	minutes := find(minuteRegex, input)
 
 	return days, hours, minutes
-}
-
-// timerMonitor is a background goroutine for checking on Timers in the Config to see if any are expiring soon or have expired
-func timerMonitor() {
-	for {
-		if len(Config.Timers) > 0 {
-			for i, t := range Config.Timers {
-				// notify 30minutes before a timer expires, then update HasNotified for that timer so that it doesn't fire again
-				if time.Until(t.Expires) <= 30*time.Minute && !t.HasNotified {
-					log.Println("sending timer message:", t)
-					err := sendTimerWarning(t)
-					if err != nil {
-						log.Println("Error sending timer message:", err)
-					}
-					Config.Timers[i].HasNotified = true
-					err = writeConfig()
-					if err != nil {
-						_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+err.Error())
-					}
-				}
-
-				// 48 hours after t.Expiry, remove it from the slice and unpin it from the channel
-				if time.Since(t.Expires) > 48*time.Hour {
-					log.Println("removing a timer because of 48hr expired removal")
-					Config.Timers = append(Config.Timers[:i], Config.Timers[i+1:]...)
-					i--
-					err := writeConfig()
-					if err != nil {
-						_, _ = Config.session.ChannelMessageSend("1189353671213981798", "<@201538116664819712> i can't write config.json: "+err.Error())
-					}
-					err = Config.session.ChannelMessageUnpin(t.Channel, t.MessageID)
-					if err != nil {
-						log.Println("Error unpinning message:", err)
-					}
-				}
-
-				// do another thing..
-
-			}
-		}
-		time.Sleep(time.Minute)
-	}
-
 }
 
 // blocked checks if the message source channel is in a blocklist, used for disallowing commands in public channels
