@@ -25,18 +25,8 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 
 	// for ie. POST /killmail?type=whoops
 	kmType := r.URL.Query()["type"][0]
-	//log.Println("got km POST data:", kmType)
 
-	//if km.Victim.ShipTypeID != 670 {
-	//	return
-	//}
-
-	// return if km.Zkb.TotalValue is 10000
-	if km.Zkb.TotalValue == 1000000.0 {
-		return
-	}
-
-	if kmType == "testing" {
+	if kmType == "whoops" {
 		err = killmailsWhoops(km)
 		if err != nil {
 			http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
@@ -44,7 +34,7 @@ func kmReceiver(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if kmType == "finishedkillfeed" {
+	if kmType == "killfeed" {
 		err = killmailsKillfeed(km)
 		if err != nil {
 			http.Error(w, "Error sending message to Discord", http.StatusInternalServerError)
