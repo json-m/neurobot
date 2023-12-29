@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
+	"math/rand"
 	"net/http"
 	"neurobot/pkg/cartographer"
 	"neurobot/pkg/esi"
@@ -18,12 +19,32 @@ func killmailsKillfeed(km zkb.Killmail) error {
 	channel := "1189353671213981798"
 	e := generateKillmailKillfeed(km)
 
-	_, err := Config.session.ChannelMessageSendEmbed(channel, &e)
+	// disallow pings from facts
+	msg := &discordgo.MessageSend{
+		Embed: &e,
+		AllowedMentions: &discordgo.MessageAllowedMentions{
+			Parse: nil,
+		},
+	}
+
+	_, err := Config.session.ChannelMessageSendComplex(channel, msg)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error sending message to Discord: %+v", http.StatusInternalServerError))
 	}
 
 	return nil
+}
+
+var facts = []string{
+	"Neurotoxin Control was founded on July 21st 2019",
+	"Neurotoxin have lost `4` Alliance Tournament ships",
+	"Neurotoxin won `The Great War of WANGS` in Tama",
+	"Neurotoxin provides femboy leasing at all major EVE Online events",
+	"In 2020 <@228304135412383746> was appointed head diplomat of Neurotoxin Control?", // @'s liam
+	"Since 2019 Neurotoxin has yet to get along with a single neighbor?",
+	"Neurotoxin Control is a proud Triple Platinum sponsor of [Femboy Hooters](<https://zkillboard.com/corporation/98647355/>)",
+	"The last Neurotoxin AT loss was <t:1680339240:R>",
+	"In Neurotoxin, AWOXing is a rite of passage",
 }
 
 func generateKillmailKillfeed(km zkb.Killmail) discordgo.MessageEmbed {
@@ -57,16 +78,19 @@ func generateKillmailKillfeed(km zkb.Killmail) discordgo.MessageEmbed {
 		break
 	}
 
+	// select random string in facts
+	randomFact := facts[rand.Intn(len(facts))]
+	descStr := fmt.Sprintf("### Did you know?\n%s", randomFact)
+
 	embed := discordgo.MessageEmbed{
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL:    fmt.Sprintf("https://images.evetech.net/types/%d/render", km.Victim.ShipTypeID),
 			Width:  64,
 			Height: 64,
 		},
-		Title: fmt.Sprintf("Kill: %s (%s)\n%s", esi.EsiCharacter(km.Victim.CharacterID).Name, inventory.SdeGetItemName(km.Victim.ShipTypeID), km.Zkb.URL),
-		// todo: change this to a "### Did you know?" kind of random fact from a list of random neurotoxin facts
-		//Description: fmt.Sprintf("[link to killmail](%s)", km.Zkb.URL),
-		Color: 0xFF0000,
+		Title:       fmt.Sprintf("Kill: %s (%s)\n%s", esi.EsiCharacter(km.Victim.CharacterID).Name, inventory.SdeGetItemName(km.Victim.ShipTypeID), km.Zkb.URL),
+		Description: descStr,
+		Color:       0xFF0000,
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Time",

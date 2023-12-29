@@ -21,113 +21,125 @@ type Timer struct {
 	HasNotified bool      `json:"hasNotified"`
 }
 
+// timerCalcHandler
+func timerCalcHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	log.Println("in timerCalcHandler:", m.Content)
+
+	args := strings.Split(stripCommand(m.Content), " ")
+	dd, hh, mm := processTimerInput(args[1])
+	now := time.Now().UTC()
+
+	// now nudge the now time by the time in the command, and return the new unixtime as string
+	var newTime time.Time
+	if hh == 0 && mm != 0 {
+		newTime = now.Add(time.Minute * time.Duration(mm))
+	} else if dd == 0 {
+		newTime = now.Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
+	} else {
+		newTime = now.AddDate(0, 0, dd).Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
+	}
+	newUnixTime := strconv.FormatInt(newTime.Unix(), 10)
+
+	// create calculator embed
+	embed := &discordgo.MessageEmbed{
+		Type:  "rich",
+		Title: "Timer calculator",
+		Description: fmt.Sprintf("<t:%s:F> :: <t:%s:R>\n\n", newUnixTime, newUnixTime) +
+			fmt.Sprintf("Relative: `<t:%s:R>`\n", newUnixTime) +
+			fmt.Sprintf("Full: `<t:%s:F>` \n", newUnixTime),
+		Color: 0x0000ff,
+	}
+
+	// send normal timer calc message
+	_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
+	if err != nil {
+		log.Println("Error sending message:", err)
+		return
+	}
+}
+
 // timerHandler handles timer messages for calculating or adding a timer to track
 func timerHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
+	log.Println("in timerHandler:", m.Content)
+
+	args := strings.Split(stripCommand(m.Content), " ")
+	dd, hh, mm := processTimerInput(args[1])
+	now := time.Now().UTC()
+
+	// now nudge the now time by the time in the command, and return the new unixtime as string
+	var newTime time.Time
+	if hh == 0 && mm != 0 {
+		newTime = now.Add(time.Minute * time.Duration(mm))
+	} else if dd == 0 {
+		newTime = now.Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
+	} else {
+		newTime = now.AddDate(0, 0, dd).Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
+	}
+	newUnixTime := strconv.FormatInt(newTime.Unix(), 10)
+
+	// create embed of each type of timestamp message
+	embed := &discordgo.MessageEmbed{
+		Type:  "rich",
+		Title: "Timer calculator",
+		Description: fmt.Sprintf("<t:%s:F> :: <t:%s:R>\n\n", newUnixTime, newUnixTime) +
+			fmt.Sprintf("Relative: `<t:%s:R>`\n", newUnixTime) +
+			fmt.Sprintf("Full: `<t:%s:F>` \n", newUnixTime),
+		Color: 0x0000ff,
+	}
+
+	log.Println("got pin request")
+
+	// the message format is:
+	// timer ddhhmm group message
+	// ddhhmm is arg 1
+
+	// set notify and msg args
+	notify := args[2]
+	message := strings.Join(args[3:], " ")
+	timer := Timer{
+		Owner:     m.Author.ID,
+		Message:   message,
+		MessageID: m.ID,
+		Channel:   m.ChannelID,
+		Expires:   newTime,
+		Notify:    notify,
+	}
+
+	embed.Color = 0x00ff00
+	embed.Title = message
+
+	// send pin embed and get response for tracking
+	response, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
+	if err != nil {
+		log.Println("Error sending message:", err)
 		return
 	}
 
-	// check if bot is allowed to talk in this channel
-	if blocked(m.ChannelID) {
+	// pin the message
+	err = s.ChannelMessagePin(m.ChannelID, response.ID)
+	if err != nil {
+		log.Println("Error pinning message:", err)
 		return
 	}
 
-	if strings.Contains(m.Content, "<@1189348098695237662> timer ") {
-		log.Println("in cmd:", m.Content)
+	// update response id
+	timer.PinnedID = response.ID
 
-		args := strings.Split(stripCommand(m.Content), " ")
-		dd, hh, mm := processTimerInput(args[1])
-		now := time.Now().UTC()
+	// append to timers
+	Config.Timers = append(Config.Timers, timer)
+	log.Printf("%+v", timer)
 
-		// now nudge the now time by the time in the command, and return the new unixtime as string
-		var newTime time.Time
-		if hh == 0 && mm != 0 {
-			newTime = now.Add(time.Minute * time.Duration(mm))
-		} else if dd == 0 {
-			newTime = now.Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
-		} else {
-			newTime = now.AddDate(0, 0, dd).Add(time.Hour*time.Duration(hh) + time.Minute*time.Duration(mm))
-		}
-		newUnixTime := strconv.FormatInt(newTime.Unix(), 10)
-
-		// create embed of each type of timestamp message
-		embed := &discordgo.MessageEmbed{
-			Type:  "rich",
-			Title: "Timer calculator",
-			Description: fmt.Sprintf("<t:%s:F> :: <t:%s:R>\n\n", newUnixTime, newUnixTime) +
-				fmt.Sprintf("Relative: `<t:%s:R>`\n", newUnixTime) +
-				fmt.Sprintf("Full: `<t:%s:F>` \n", newUnixTime),
-			Color: 0x0000ff,
-		}
-
-		// pin arg handler
-		for _, a := range args {
-			if a == "pin" {
-				log.Println("got pin request")
-
-				// the message format is:
-				// timer ddhhmm pin group message
-				// ddhhmm is arg 1
-
-				// set notify and msg args
-				notify := args[3]
-				message := strings.Join(args[4:], " ")
-				timer := Timer{
-					Owner:     m.Author.ID,
-					Message:   message,
-					MessageID: m.ID,
-					Channel:   m.ChannelID,
-					Expires:   newTime,
-					Notify:    notify,
-				}
-
-				embed.Color = 0x00ff00
-				embed.Title = message
-
-				// send pin embed and get response for tracking
-				response, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
-				if err != nil {
-					log.Println("Error sending message:", err)
-					return
-				}
-
-				// pin the message
-				err = s.ChannelMessagePin(m.ChannelID, response.ID)
-				if err != nil {
-					log.Println("Error pinning message:", err)
-					return
-				}
-
-				// update response id
-				timer.PinnedID = response.ID
-
-				// append to timers
-				Config.Timers = append(Config.Timers, timer)
-				log.Printf("%+v", timer)
-
-				// write config
-				err = writeConfig()
-				if err != nil {
-					log.Println("writing config during pin:", err)
-					_, _ = s.ChannelMessageSend(m.ChannelID, err.Error())
-					return
-				}
-
-				// react to msg
-				_ = s.MessageReactionAdd(m.ChannelID, m.ID, "⏰")
-				_ = s.MessageReactionAdd(m.ChannelID, m.ID, "❌")
-
-				return
-			}
-		}
-
-		// send normal timer calc message
-		_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
-		if err != nil {
-			log.Println("Error sending message:", err)
-			return
-		}
+	// write config
+	err = writeConfig()
+	if err != nil {
+		log.Println("writing config during pin:", err)
+		_, _ = s.ChannelMessageSend(m.ChannelID, err.Error())
+		return
 	}
+
+	// react to msg
+	_ = s.MessageReactionAdd(m.ChannelID, m.ID, "⏰")
+	_ = s.MessageReactionAdd(m.ChannelID, m.ID, "❌")
 
 }
 

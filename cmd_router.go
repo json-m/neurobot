@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"log"
 	"strings"
 )
 
@@ -26,8 +25,10 @@ func cmdHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// switch on each command
 	args := strings.Split(stripCommand(m.Content), " ")
 	switch args[0] {
+	case "calc":
+		timerCalcHandler(s, m)
 	case "timer":
-		log.Println("would have invoked timer handler from cmdHandler")
+		timerHandler(s, m)
 	case "timers":
 		showTimersHandler(s, m)
 	case "stats":
